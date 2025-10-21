@@ -30,7 +30,10 @@ void Tx0_Task(void *pvParameters) {
     for (uint16_t i = 0; i <= 65535; i++) {
         msg.data = i;
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        /* Enviar mensaje a la cola */
+        xQueueSend(xMessageQueue, &msg, portMAX_DELAY);
+
+        vTaskDelay(pdMS_TO_TICKS(5));
     }
 
     vTaskDelete(NULL);
@@ -44,7 +47,10 @@ void Tx1_Task(void *pvParameters) {
     for (int32_t i = 65535; i >= 0; i--) {
         msg.data = (uint16_t)i;
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        /* Enviar mensaje a la cola */
+        xQueueSend(xMessageQueue, &msg, portMAX_DELAY);
+
+        vTaskDelay(pdMS_TO_TICKS(5));
     }
 
     vTaskDelete(NULL);
@@ -58,7 +64,10 @@ void Tx2_Task(void *pvParameters) {
     for (uint16_t i = 0; i <= 65535; i += 2) {  /* Incrementa de 2 en 2 */
         msg.data = i;
 
-        vTaskDelay(pdMS_TO_TICKS(20));
+        /* Enviar mensaje a la cola */
+        xQueueSend(xMessageQueue, &msg, portMAX_DELAY);
+
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 
     vTaskDelete(NULL);
@@ -83,22 +92,24 @@ int main(void) {
     BOARD_InitBootClocks();
     BOARD_InitDebugConsole();
 
-    /* Crear la cola de mensajes */
-    xMessageQueue = xQueueCreate(10, sizeof(Message_t));
+    PRINTF("========================================\r\n");
+    PRINTF("Tarea 5\r\n");
+    PRINTF("========================================\r\n\r\n");
 
-    BaseType_t xReturn;
+    /* Crear la cola de mensajes */
+    xMessageQueue = xQueueCreate(50, sizeof(Message_t));
 
     /* Crear Tx0_Task con prioridad 2 */
-    xReturn = xTaskCreate(Tx0_Task, "Tx0", configMINIMAL_STACK_SIZE + 100, NULL, 2, NULL);
+    xTaskCreate(Tx0_Task, "Tx0", configMINIMAL_STACK_SIZE + 100, NULL, 2, NULL);
 
     /* Crear Tx1_Task con prioridad 3 */
-    xReturn = xTaskCreate(Tx1_Task, "Tx1", configMINIMAL_STACK_SIZE + 100, NULL, 3, NULL);
+    xTaskCreate(Tx1_Task, "Tx1", configMINIMAL_STACK_SIZE + 100, NULL, 3, NULL);
 
     /* Crear Tx2_Task con prioridad 1 */
-    xReturn = xTaskCreate(Tx2_Task, "Tx2", configMINIMAL_STACK_SIZE + 100, NULL, 1, NULL);
+    xTaskCreate(Tx2_Task, "Tx2", configMINIMAL_STACK_SIZE + 100, NULL, 1, NULL);
 
     /* Crear Rx_Task con prioridad 4 */
-    xReturn = xTaskCreate(Rx_Task, "Rx", configMINIMAL_STACK_SIZE + 100, NULL, 4, NULL);
+    xTaskCreate(Rx_Task, "Rx", configMINIMAL_STACK_SIZE + 100, NULL, 4, NULL);
 
     /* Iniciar scheduler */
     vTaskStartScheduler();
